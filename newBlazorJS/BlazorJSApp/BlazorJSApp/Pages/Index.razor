@@ -1,0 +1,54 @@
+﻿@page "/"
+
+@using BlazorJSApp.Data
+
+@inject IJSRuntime JSRuntime
+@inject WeatherForecastService weatherService
+@inject LocalStorageService localStorage
+<h1>Hello, <span id="myname">@Name</span></h1>
+
+Welcome to your new app
+<button @onclick="TriggerAlert">Allert Trigger</button>
+<button @onclick="showPrompt">Show Prompt</button>
+
+<SurveyPrompt Title="How is Blazor working for you?" />
+@code{ 
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var savedName = await localStorage.GetItemsAsync("name");
+            if (!string.IsNullOrEmpty(savedName))
+            {
+                Name = savedName;
+                await JSRuntime.InvokeVoidAsync("App.setName", Name);
+            }
+        }
+    }
+
+    public string Name { get; set; } = "World";
+
+    public async Task TriggerAlert()
+    {
+        var forcast = await weatherService.GetForecastAsync(DateTime.Now);
+        await JSRuntime.InvokeVoidAsync("App.triggerAlert",forcast);
+    }
+
+    public async Task showPrompt()
+    {
+        var result = await JSRuntime.InvokeAsync<string>("App.prompt", "");
+        if (!string.IsNullOrEmpty(result))
+        {
+            Name = result;
+            await localStorage.SetItemAsync("name", result);
+        }
+
+    }
+
+    [JSInvokable]
+    public static string Greet(string name)
+    {
+        return "Hello " + name;
+    }
+}

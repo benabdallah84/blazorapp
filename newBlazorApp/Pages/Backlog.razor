@@ -1,0 +1,11 @@
+﻿@page "/backlog"
+@page "/backlog/{Name}"
+<h3>Backlog</h3>
+@using newBlazorApp.Componenents.Backlog;
+
+<Items Name="@Name" />
+
+@code {
+    [Parameter]
+    public string Name { get; set; } = "hello";
+}
